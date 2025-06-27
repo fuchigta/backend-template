@@ -1,0 +1,7 @@
+reporter: spec
+server: uv run python main.py
+server-wait: 3
+language: python
+hookfiles: hooks.py
+blueprint: openapi.yaml
+endpoint: http://localhost:8000

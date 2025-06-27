@@ -1,0 +1,64 @@
+repos:
+  # Ruff linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.1
+    hooks:
+      - id: ruff
+        args: [--fix]
+        name: "Ruff: Fix linting issues"
+        exclude: ^contract_test\.py$
+      - id: ruff-format
+        name: "Ruff: Format code"
+
+  # MyPy type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.16.1
+    hooks:
+      - id: mypy
+        args: [--config-file=pyproject.toml]
+        additional_dependencies: [fastapi, pydantic, uvicorn]
+        files: ^src/
+        name: "MyPy: Type checking"
+
+  # Pytest testing
+  - repo: local
+    hooks:
+      - id: pytest
+        name: "Pytest: Run tests"
+        entry: uv run pytest
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
+
+  # Lizard complexity analysis
+  - repo: local
+    hooks:
+      - id: lizard
+        name: "Lizard: Complexity analysis"
+        entry: uv run lizard src/
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
+
+
+  # Basic file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        name: "Remove trailing whitespace"
+      - id: end-of-file-fixer
+        name: "Fix end of files"
+      - id: check-yaml
+        name: "Check YAML syntax"
+        exclude: ^node_modules/
+      - id: check-json
+        name: "Check JSON syntax"
+        exclude: ^node_modules/
+      - id: check-merge-conflict
+        name: "Check for merge conflicts"
+      - id: check-added-large-files
+        name: "Check for large files"
+        exclude: ^node_modules/
