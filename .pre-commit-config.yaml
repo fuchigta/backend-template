@@ -62,6 +62,17 @@ repos:
         args: ['--baseline', '.secrets.baseline']
         exclude: ^tests/
 
+  # Vulnerability scanning
+  - repo: local
+    hooks:
+      - id: pip-audit
+        name: "pip-audit: Vulnerability scanning"
+        entry: uv run pip-audit
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
+
   # Basic file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0

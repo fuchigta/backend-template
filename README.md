@@ -15,6 +15,7 @@ AIコーディングエージェント専用に設計されたPython REST APIテ
 - **複雑度管理**: Lizardによる自動複雑度解析
 - **型安全性**: 厳格な設定によるMyPy型チェック
 - **シークレット検出**: detect-secretsによる機微情報の自動検出
+- **脆弱性スキャン**: pip-auditによるCVE等既知脆弱性の検出
 
 ## クイックスタート
 
@@ -77,7 +78,7 @@ uv run mypy src/
 
 ```bash
 # すべての品質チェックを実行
-uv run ruff check . && uv run mypy src/ && uv run pytest && uv run lizard src/ && uv run python schema_test.py && uv run detect-secrets scan --baseline .secrets.baseline .
+uv run ruff check . && uv run mypy src/ && uv run pytest && uv run lizard src/ && uv run python schema_test.py && uv run detect-secrets scan --baseline .secrets.baseline . && uv run pip-audit
 ```
 
 ## 品質ゲート
@@ -89,6 +90,7 @@ uv run ruff check . && uv run mypy src/ && uv run pytest && uv run lizard src/ &
 - **MyPy**: 完全な型注釈を要求する厳格な型チェック
 - **Lizard**: 設定可能な閾値による複雑度解析
 - **detect-secrets**: APIキー、トークン等の機微情報検出
+- **pip-audit**: 依存関係の既知脆弱性（CVE）検出
 
 ### テスト
 - **単体テスト**: pytestによる包括的なテストカバレッジ
@@ -163,6 +165,7 @@ uv run ruff check --fix .               # 自動修正
 uv run mypy src/                        # 型チェック
 uv run lizard src/                      # 複雑度解析
 uv run detect-secrets scan --baseline .secrets.baseline .  # シークレット検出
+uv run pip-audit                        # 脆弱性スキャン
 ```
 
 ### Pre-commit
@@ -178,6 +181,7 @@ git commit -m "message"                 # フックが自動実行
 - **MyPy**: 包括的な警告を持つ厳格な型チェック
 - **Lizard**: `pyproject.toml`で定義された複雑度閾値
 - **detect-secrets**: `.secrets.baseline`でベースライン管理
+- **pip-audit**: PyPAの公式脆弱性データベースによる検出
 
 ### テスト設定
 - **Pytest**: 標準的なテスト検出と実行

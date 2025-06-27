@@ -37,7 +37,7 @@ uv run lizard src/                      # Complexity analysis
 
 **Quality Check All:**
 ```bash
-uv run ruff check . && uv run mypy src/ && uv run pytest && uv run lizard src/ && uv run python schema_test.py && uv run detect-secrets scan --baseline .secrets.baseline .
+uv run ruff check . && uv run mypy src/ && uv run pytest && uv run lizard src/ && uv run python schema_test.py && uv run detect-secrets scan --baseline .secrets.baseline . && uv run pip-audit
 ```
 
 **Pre-commit Hooks:**
@@ -133,7 +133,10 @@ uv run lizard src/ --CCN 8 --length 50 --arguments 5  # MUST show no violations
 # 5. Secret detection compliance
 uv run detect-secrets scan --baseline .secrets.baseline .  # MUST show no new secrets
 
-# 6. Pre-commit hook compliance
+# 6. Vulnerability scanning compliance
+uv run pip-audit                               # MUST show no known vulnerabilities
+
+# 7. Pre-commit hook compliance
 uv run pre-commit run --all-files               # MUST show all hooks "Passed"
 ```
 
@@ -143,6 +146,7 @@ uv run pre-commit run --all-files               # MUST show all hooks "Passed"
 - Any linting/type error → Code quality standards violated
 - Any complexity violation → Code maintainability at risk
 - Any secret detection → Sensitive information exposure risk
+- Any vulnerability detection → Known security risk present
 - Any pre-commit failure → Development standards not met
 
 **If ANY check fails: DO NOT COMMIT. Fix the root cause first.**
@@ -326,6 +330,7 @@ When schema validation reveals inconsistencies, present clear options:
 - Pytest: Test discovery in `tests/` directory with standard naming conventions
 - Lizard: Complexity analysis to maintain code maintainability
 - detect-secrets: Automated secret detection to prevent sensitive information leaks
+- pip-audit: Vulnerability scanning for known CVEs in dependencies
 
 ## Important Implementation Details
 
