@@ -6,7 +6,6 @@ repos:
       - id: ruff
         args: [--fix]
         name: "Ruff: Fix linting issues"
-        exclude: ^contract_test\.py$
       - id: ruff-format
         name: "Ruff: Format code"
 
@@ -37,6 +36,17 @@ repos:
       - id: lizard
         name: "Lizard: Complexity analysis"
         entry: uv run lizard src/ --CCN 8 --length 50 --arguments 5
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
+
+  # Schema-driven contract testing
+  - repo: local
+    hooks:
+      - id: schema-test
+        name: "Schemathesis: Contract testing"
+        entry: uv run python schema_test.py
         language: system
         types: [python]
         pass_filenames: false

@@ -33,12 +33,12 @@ def test_create_task(client: TestClient) -> None:
 
 
 def test_create_task_minimal(client: TestClient) -> None:
-    task_data = {"title": "Minimal task"}
+    task_data = {"title": "Minimal task", "description": "Minimal description"}
     response = client.post("/tasks", json=task_data)
     assert response.status_code == 201
     data = response.json()
     assert data["title"] == "Minimal task"
-    assert data["description"] is None
+    assert data["description"] == "Minimal description"
 
 
 def test_create_task_invalid(client: TestClient) -> None:
@@ -46,9 +46,21 @@ def test_create_task_invalid(client: TestClient) -> None:
     assert response.status_code == 400
 
 
+def test_create_task_empty_description(client: TestClient) -> None:
+    task_data = {"title": "Test task", "description": ""}
+    response = client.post("/tasks", json=task_data)
+    assert response.status_code == 400
+
+
+def test_create_task_missing_description(client: TestClient) -> None:
+    task_data = {"title": "Test task"}
+    response = client.post("/tasks", json=task_data)
+    assert response.status_code == 400
+
+
 def test_get_task(client: TestClient) -> None:
     # Create a task first
-    task_data = {"title": "Test task"}
+    task_data = {"title": "Test task", "description": "Test description"}
     create_response = client.post("/tasks", json=task_data)
     task_id = create_response.json()["id"]
 
@@ -68,7 +80,7 @@ def test_get_task_not_found(client: TestClient) -> None:
 
 def test_update_task(client: TestClient) -> None:
     # Create a task first
-    task_data = {"title": "Original task"}
+    task_data = {"title": "Original task", "description": "Original description"}
     create_response = client.post("/tasks", json=task_data)
     task_id = create_response.json()["id"]
 
@@ -89,7 +101,7 @@ def test_update_task_not_found(client: TestClient) -> None:
 
 def test_delete_task(client: TestClient) -> None:
     # Create a task first
-    task_data = {"title": "Task to delete"}
+    task_data = {"title": "Task to delete", "description": "Description to delete"}
     create_response = client.post("/tasks", json=task_data)
     task_id = create_response.json()["id"]
 
@@ -109,8 +121,8 @@ def test_delete_task_not_found(client: TestClient) -> None:
 
 def test_get_all_tasks_with_data(client: TestClient) -> None:
     # Create multiple tasks
-    client.post("/tasks", json={"title": "Task 1"})
-    client.post("/tasks", json={"title": "Task 2"})
+    client.post("/tasks", json={"title": "Task 1", "description": "Description 1"})
+    client.post("/tasks", json={"title": "Task 2", "description": "Description 2"})
 
     response = client.get("/tasks")
     assert response.status_code == 200

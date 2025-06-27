@@ -37,7 +37,7 @@ uv run lizard src/                      # Complexity analysis
 
 **Quality Check All:**
 ```bash
-uv run ruff check . && uv run mypy src/ && uv run pytest && uv run lizard src/
+uv run ruff check . && uv run mypy src/ && uv run pytest && uv run lizard src/ && uv run python schema_test.py
 ```
 
 **Pre-commit Hooks:**
@@ -47,11 +47,8 @@ uv run pre-commit run --all-files   # Run all hooks manually
 git commit -m "message"             # Hooks run automatically on commit
 ```
 
-**⚠️ Important: Manual Contract Testing Required**
-OpenAPI contract testing is excluded from pre-commit hooks. **Always run manually before committing API changes:**
-```bash
-uv run python contract_test.py      # Verify API matches OpenAPI specification
-```
+**✅ Automated Contract Testing**
+Schema-driven contract testing is integrated into pre-commit hooks and runs automatically on every commit.
 
 ## Development Workflow
 
@@ -85,7 +82,7 @@ uv run pytest                      # Confirm tests still pass
 
 **3. Contract Verification:**
 ```bash
-uv run python contract_test.py      # Verify implementation matches OpenAPI spec
+uv run python schema_test.py        # Schema-driven testing with schemathesis
 ```
 
 **4. Quality Assurance:**
@@ -93,12 +90,72 @@ uv run python contract_test.py      # Verify implementation matches OpenAPI spec
 uv run pre-commit run --all-files   # Run all quality checks
 ```
 
-### ⚠️ Critical Rules
+### 🚨 CRITICAL RULES - NEVER VIOLATE THESE
 
-1. **Never implement before updating OpenAPI schema** - The specification is the source of truth
-2. **Always follow Red-Green-Refactor cycle** - Write failing tests first, then implement
-3. **Verify contract compliance** - API must match OpenAPI specification exactly
-4. **All commits must pass quality gates** - Pre-commit hooks enforce code standards
+**⚠️ SCHEMA-FIRST ENFORCEMENT:**
+1. **NEVER implement API changes before updating OpenAPI schema** - The specification is the source of truth. Any deviation invalidates contract testing
+2. **NEVER deploy if schema tests fail** - `uv run python schema_test.py` must pass 100% before any commit
+
+**⚠️ TDD ENFORCEMENT:**
+3. **NEVER write production code without failing tests** - Always follow Red-Green-Refactor cycle strictly
+4. **NEVER commit without running full test suite** - All tests (unit + integration + schema) must pass
+
+**⚠️ QUALITY GATE ENFORCEMENT:**
+5. **NEVER bypass pre-commit hooks** - Use `git commit --no-verify` is FORBIDDEN
+6. **NEVER ignore linting/type errors** - All Ruff, MyPy, and Lizard checks must pass
+7. **NEVER commit if complexity thresholds exceeded** - CCN ≤ 8, Length ≤ 50, Parameters ≤ 5
+
+**⚠️ TOOL INTEGRITY ENFORCEMENT:**
+8. **NEVER create custom implementations of existing tools** - Always invest time to properly configure established libraries
+9. **NEVER disable checks to "make it work"** - Fix root causes, never mask symptoms
+
+**⚠️ DECISION TRANSPARENCY ENFORCEMENT:**
+10. **NEVER make assumptions on ambiguous requirements** - Always present options and ask for explicit guidance
+11. **NEVER implement multiple approaches without justification** - Document all design decisions with rationale
+
+### 🛡️ MANDATORY PRE-COMMIT VERIFICATION
+
+**STOP!** Before every commit, verify ALL of these pass:
+
+```bash
+# 1. Schema compliance check
+uv run python schema_test.py                    # MUST show "No issues found"
+
+# 2. Test suite compliance
+uv run pytest                                   # MUST show "100% passed"
+
+# 3. Code quality compliance
+uv run ruff check . && uv run mypy src/         # MUST show "All checks passed"
+
+# 4. Complexity compliance
+uv run lizard src/ --CCN 8 --length 50 --arguments 5  # MUST show no violations
+
+# 5. Pre-commit hook compliance
+uv run pre-commit run --all-files               # MUST show all hooks "Passed"
+```
+
+**❌ COMMIT BLOCKERS:**
+- Any schema test failure → Implementation violates contract
+- Any unit test failure → Code logic is broken
+- Any linting/type error → Code quality standards violated
+- Any complexity violation → Code maintainability at risk
+- Any pre-commit failure → Development standards not met
+
+**If ANY check fails: DO NOT COMMIT. Fix the root cause first.**
+
+### 🚨 EMERGENCY PROCEDURES
+
+**When Quality Gates Fail:**
+
+1. **NEVER use `git commit --no-verify`** - This bypasses all safety mechanisms
+2. **NEVER temporarily disable checks** - Fix the underlying issue instead
+3. **NEVER commit with TODO comments** - All code must be production-ready
+4. **NEVER merge without green CI** - All automated checks must pass
+
+**Escalation Path:**
+- First attempt: Fix the failing check by addressing root cause
+- Second attempt: Research proper solution in documentation/community
+- Final resort: Ask for explicit guidance with detailed problem description
 
 ### TDD Principles (t-wada approach)
 
@@ -129,6 +186,110 @@ uv run pytest                                         # Ensure refactoring doesn
 - **High CCN**: Extract methods, reduce nesting, use guard clauses
 - **Long functions**: Split into logical sub-functions with clear responsibilities
 - **Many parameters**: Create data classes or use dependency injection
+
+## Development Best Practices
+
+### Library and Tool Integration Philosophy
+
+**⚠️ Avoid Custom Implementations**
+When encountering issues with established libraries or tools, **never resort to custom implementations** as the first solution. This approach leads to:
+- Increased maintenance burden
+- Loss of community support and updates
+- Reinvention of solved problems
+- Technical debt accumulation
+
+**✅ Proper Approach for Tool Integration Issues:**
+
+1. **Investigate thoroughly** - Read documentation, check version compatibility, examine error messages carefully
+2. **Seek community solutions** - Search issues, Stack Overflow, and community forums
+3. **Try different approaches** - Configuration changes, alternative parameters, different usage patterns
+4. **Consult official examples** - Review official documentation and sample projects
+5. **Only then consider alternatives** - Look for other established tools that solve the same problem
+
+**Example: Schema Testing Tool Selection**
+- **Problem**: Initial dredd configuration had issues with OpenAPI schema parsing
+- **Wrong approach**: Immediately build custom contract testing with hardcoded scenarios
+- **Correct approach**: Investigate schemathesis as an alternative, learn its CLI options, configure properly
+- **Result**: Robust, maintainable schema-driven testing with community support
+
+**Benefits of Using Established Tools:**
+- **Continuous improvement** - Tools evolve with community contributions
+- **Bug fixes and security updates** - Maintained by dedicated teams
+- **Documentation and examples** - Extensive resources for troubleshooting
+- **Integration ecosystem** - Works well with other standard tools
+- **Reduced maintenance** - Focus on business logic instead of infrastructure
+
+**Decision Framework:**
+```
+Tool not working? → Investigate configuration → Try alternatives → Research community solutions → Document learnings
+                                                                                            ↓
+                                                                                    Only build custom if:
+                                                                                    - No existing solution exists
+                                                                                    - Requirements are truly unique
+                                                                                    - Team has capacity for long-term maintenance
+```
+
+### Design Decision Making
+
+**⚠️ Always Seek Clarification for Ambiguous Requirements**
+
+When encountering design decisions that could be implemented in multiple valid ways, **never make assumptions**. Instead:
+
+**✅ MANDATORY Approach for Ambiguous Requirements:**
+1. **STOP implementation immediately** - Do not proceed with any coding
+2. **Identify the ambiguity precisely** - Clearly articulate what aspects are unclear
+3. **Research existing patterns** - Check codebase, documentation, and industry standards
+4. **Present structured options** - List ALL valid approaches with trade-offs in this format:
+   ```
+   **Option A**: [Approach]
+   - Pros: [List benefits]
+   - Cons: [List drawbacks]
+   - Impact: [Performance/maintenance/compatibility implications]
+
+   **Option B**: [Alternative approach]
+   - Pros: [List benefits]
+   - Cons: [List drawbacks]
+   - Impact: [Performance/maintenance/compatibility implications]
+   ```
+5. **Ask for explicit guidance** - Request specific direction with clear question
+6. **Wait for confirmation** - Do not assume or proceed until explicit approval
+7. **Document the decision** - Record chosen approach, rationale, and alternatives considered
+
+**Example: Field Validation Requirements**
+When schema validation reveals inconsistencies, present clear options:
+
+- **Option A**: Allow null/empty values (more permissive)
+- **Option B**: Reject empty strings but allow null (moderate)
+- **Option C**: Require non-empty values (most restrictive)
+
+**Questions to Ask:**
+- What level of data validation strictness is desired?
+- Should the API be backward-compatible with existing clients?
+- Are there business rules that dictate field requirements?
+- What is the expected user experience for validation errors?
+
+**Benefits of Explicit Clarification:**
+- **Avoids rework** - Prevents implementing the wrong approach
+- **Ensures alignment** - All stakeholders agree on the direction
+- **Creates documentation** - Decisions are recorded for future reference
+- **Reduces technical debt** - Proper design from the start
+
+**🚫 FORBIDDEN ASSUMPTIONS:**
+- **NEVER assume field requirements** - Always clarify required vs optional with validation rules
+- **NEVER assume error response formats** - Always confirm status codes and message structures
+- **NEVER assume backwards compatibility needs** - Always clarify migration requirements
+- **NEVER assume performance requirements** - Always clarify latency/throughput expectations
+- **NEVER assume security requirements** - Always clarify authentication/authorization needs
+
+**⚠️ Common Ambiguous Scenarios Requiring Clarification:**
+- Field validation rules (required vs optional, format constraints)
+- Error response formats and status codes
+- API versioning strategies
+- Authentication and authorization requirements
+- Performance vs simplicity trade-offs
+- Data persistence and backup strategies
+- Logging and monitoring requirements
+- Rate limiting and throttling policies
 
 ## Architecture
 

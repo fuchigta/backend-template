@@ -46,21 +46,23 @@ coverage.xml
 *.cover
 .cache
 nosetests.xml
+.hypothesis/
 
 # MyPy
 .mypy_cache/
 .dmypy.json
 dmypy.json
 
-# Node.js (for dredd)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Ruff
+.ruff_cache/
+
+# Schemathesis reports
+schemathesis-report/
 
 # System
 .DS_Store
 Thumbs.db
+
 
 # Project specific
 *.log

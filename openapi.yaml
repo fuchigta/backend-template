@@ -20,6 +20,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Task'
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     post:
       summary: Create a new task
       requestBody:
@@ -37,6 +43,12 @@ paths:
                 $ref: '#/components/schemas/Task'
         '400':
           description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Method not allowed
           content:
             application/json:
               schema:
@@ -59,8 +71,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid task ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
           description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Method not allowed
           content:
             application/json:
               schema:
@@ -99,6 +123,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     delete:
       summary: Delete a task
       parameters:
@@ -111,8 +141,20 @@ paths:
       responses:
         '204':
           description: Task deleted successfully
+        '400':
+          description: Invalid task ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
           description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Method not allowed
           content:
             application/json:
               schema:
@@ -136,7 +178,7 @@ components:
           example: "Complete project documentation"
         description:
           type: string
-          nullable: true
+          minLength: 1
           example: "Write comprehensive API documentation"
         completed:
           type: boolean
@@ -154,13 +196,14 @@ components:
       type: object
       required:
         - title
+        - description
       properties:
         title:
           type: string
           example: "Complete project documentation"
         description:
           type: string
-          nullable: true
+          minLength: 1
           example: "Write comprehensive API documentation"
 
     TaskUpdate:
@@ -171,7 +214,7 @@ components:
           example: "Complete project documentation"
         description:
           type: string
-          nullable: true
+          minLength: 1
           example: "Write comprehensive API documentation"
         completed:
           type: boolean

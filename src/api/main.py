@@ -10,6 +10,7 @@ app = FastAPI(
     title="Task Management API",
     description="A simple REST API for managing tasks",
     version="1.0.0",
+    redirect_slashes=False,
 )
 
 
@@ -27,9 +28,20 @@ async def validation_exception_handler(
 async def custom_http_exception_handler(
     request: Request, exc: StarletteHTTPException
 ) -> JSONResponse:
+    headers = {}
+    if exc.status_code == 405:
+        # Add Allow header for Method Not Allowed responses
+        if request.url.path == "/tasks":
+            headers["Allow"] = "GET, POST"
+        elif (
+            request.url.path.startswith("/tasks/") and request.url.path.count("/") == 2
+        ):
+            headers["Allow"] = "GET, PUT, DELETE"
+
     return JSONResponse(
         status_code=exc.status_code,
         content={"message": exc.detail},
+        headers=headers,
     )
 
 
