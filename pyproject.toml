@@ -41,3 +41,9 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+
+[tool.lizard]
+# Complexity thresholds for code quality
+ccn_threshold = 8        # Cyclomatic complexity threshold
+length_threshold = 50    # Function length threshold
+parameter_threshold = 5  # Parameter count threshold

@@ -53,6 +53,83 @@ OpenAPI contract testing is excluded from pre-commit hooks. **Always run manuall
 uv run python contract_test.py      # Verify API matches OpenAPI specification
 ```
 
+## Development Workflow
+
+This project follows a strict **Schema-First + TDD** approach for all API development.
+
+### API Development Process
+
+**1. Schema First Design:**
+```bash
+# ALWAYS start by updating the OpenAPI specification
+vim openapi.yaml                    # Define/modify API endpoints, models, responses
+```
+
+**2. TDD Implementation (t-wada approach):**
+```bash
+# Red: Write failing tests first
+vim tests/test_api.py               # Add tests for new functionality
+uv run pytest                      # Confirm tests fail (Red phase)
+
+# Green: Implement minimal code to pass tests
+vim src/api/models.py               # Update Pydantic models if needed
+vim src/api/main.py                 # Implement API endpoints
+uv run pytest                      # Confirm tests pass (Green phase)
+
+# Refactor: Improve code quality while keeping tests green
+uv run ruff check --fix .           # Fix code style issues
+uv run mypy src/                    # Ensure type safety
+uv run lizard src/ --CCN 8 --length 50 --arguments 5  # Check complexity thresholds
+uv run pytest                      # Confirm tests still pass
+```
+
+**3. Contract Verification:**
+```bash
+uv run python contract_test.py      # Verify implementation matches OpenAPI spec
+```
+
+**4. Quality Assurance:**
+```bash
+uv run pre-commit run --all-files   # Run all quality checks
+```
+
+### ⚠️ Critical Rules
+
+1. **Never implement before updating OpenAPI schema** - The specification is the source of truth
+2. **Always follow Red-Green-Refactor cycle** - Write failing tests first, then implement
+3. **Verify contract compliance** - API must match OpenAPI specification exactly
+4. **All commits must pass quality gates** - Pre-commit hooks enforce code standards
+
+### TDD Principles (t-wada approach)
+
+- **Red Phase**: Write the simplest test that fails
+- **Green Phase**: Write the minimal code to make the test pass
+- **Refactor Phase**: Improve code structure without changing behavior
+- **Repeat**: Small iterations with frequent feedback
+
+### Code Complexity Management
+
+**Lizard Static Analysis Thresholds:**
+- **Cyclomatic Complexity (CCN)**: ≤ 8 - Functions exceeding this must be refactored
+- **Function Length**: ≤ 50 lines - Long functions should be split into smaller ones
+- **Parameter Count**: ≤ 5 parameters - Too many parameters indicate design issues
+
+**When Complexity Thresholds Are Exceeded:**
+```bash
+uv run lizard src/ --CCN 8 --length 50 --arguments 5  # Identify violations
+# Refactor the flagged functions by:
+# 1. Extract smaller functions from complex ones
+# 2. Use parameter objects instead of many parameters
+# 3. Simplify conditional logic with early returns
+# 4. Consider design patterns (Strategy, Command, etc.)
+uv run pytest                                         # Ensure refactoring doesn't break functionality
+```
+
+**Refactoring Guidelines:**
+- **High CCN**: Extract methods, reduce nesting, use guard clauses
+- **Long functions**: Split into logical sub-functions with clear responsibilities
+- **Many parameters**: Create data classes or use dependency injection
+
 ## Architecture
 
 **API Structure:**
