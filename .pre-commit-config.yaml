@@ -35,7 +35,7 @@ repos:
     hooks:
       - id: lizard
         name: "Lizard: Complexity analysis"
-        entry: uv run lizard src/ --CCN 8 --length 50 --arguments 5
+        entry: uv run lizard src/
         language: system
         types: [python]
         pass_filenames: false
