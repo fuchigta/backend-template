@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked --dev
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format
+        run: uv run ruff format --check .
+
+      - name: Mypy
+        run: uv run mypy src/
+
+      - name: Lizard complexity
+        run: uv run lizard src/ --CCN 8 --length 50 --arguments 5
+
+      - name: Detect secrets
+        run: git ls-files -z -- . ':!tests/' | xargs -0 uv run detect-secrets-hook --baseline .secrets.baseline
+
+      - name: Pytest
+        run: uv run pytest
+
+      - name: Schema contract tests
+        run: uv run python schema_test.py
+
+      - name: Pip audit
+        run: uv run pip-audit
