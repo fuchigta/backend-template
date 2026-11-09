@@ -37,12 +37,19 @@ async def custom_http_exception_handler(
             request.url.path.startswith("/tasks/") and request.url.path.count("/") == 2
         ):
             headers["Allow"] = "GET, PUT, DELETE"
+        elif request.url.path == "/health":
+            headers["Allow"] = "GET"
 
     return JSONResponse(
         status_code=exc.status_code,
         content={"message": exc.detail},
         headers=headers,
     )
+
+
+@app.get("/health", response_model=dict[str, str])
+def health_check() -> dict[str, str]:
+    return {"status": "ok"}
 
 
 @app.get("/tasks", response_model=list[Task])
