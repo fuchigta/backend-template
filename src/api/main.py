@@ -39,6 +39,7 @@ async def custom_http_exception_handler(
             headers["Allow"] = "GET, PUT, DELETE"
         elif request.url.path == "/health":
             headers["Allow"] = "GET"
+
     return JSONResponse(
         status_code=exc.status_code,
         content={"message": exc.detail},
