@@ -33,11 +33,12 @@ uv run ruff check .                     # Lint code
 uv run ruff check --fix .               # Auto-fix linting issues
 uv run mypy src/                        # Type checking
 uv run lizard src/                      # Complexity analysis
+cccc src                                # Cognitive/cyclomatic complexity gate (cccc v1.8.6 binary, thresholds in cccc.toml)
 ```
 
 **Quality Check All:**
 ```bash
-uv run ruff check . && uv run mypy src/ && uv run pytest && uv run lizard src/ && uv run python schema_test.py && uv run detect-secrets scan --baseline .secrets.baseline . && uv run pip-audit
+uv run ruff check . && uv run mypy src/ && uv run pytest && uv run lizard src/ && cccc src && uv run python schema_test.py && uv run detect-secrets scan --baseline .secrets.baseline . && uv run pip-audit
 ```
 
 **Pre-commit Hooks:**

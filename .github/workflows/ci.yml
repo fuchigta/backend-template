@@ -34,6 +34,12 @@ jobs:
       - name: Lizard complexity
         run: uv run lizard src/ --CCN 8 --length 50 --arguments 5
 
+      - name: Cccc complexity
+        uses: moznion/cccc-action@v1.1.2
+        with:
+          version: v1.8.6
+          path: src
+
       - name: Detect secrets
         run: git ls-files -z -- . ':!tests/' | xargs -0 uv run detect-secrets-hook --baseline .secrets.baseline
 
