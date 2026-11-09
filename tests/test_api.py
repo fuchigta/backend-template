@@ -130,3 +130,16 @@ def test_get_all_tasks_with_data(client: TestClient) -> None:
     assert len(data) == 2
     assert data[0]["title"] == "Task 1"
     assert data[1]["title"] == "Task 2"
+
+
+def test_health_check(client: TestClient) -> None:
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+def test_health_check_method_not_allowed(client: TestClient) -> None:
+    response = client.post("/health")
+    assert response.status_code == 405
+    assert response.headers["Allow"] == "GET"
+    assert "message" in response.json()
