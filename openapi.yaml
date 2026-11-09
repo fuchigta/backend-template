@@ -54,7 +54,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-    /health:
+  /health:
     get:
       summary: Health check
       responses:
