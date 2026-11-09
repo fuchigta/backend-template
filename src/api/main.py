@@ -34,8 +34,7 @@ async def custom_http_exception_handler(
         if request.url.path == "/tasks":
             headers["Allow"] = "GET, POST"
         elif (
-            request.url.path.startswith("/tasks/")
-            and request.url.path.count("/") == 2
+            request.url.path.startswith("/tasks/") and request.url.path.count("/") == 2
         ):
             headers["Allow"] = "GET, PUT, DELETE"
         elif request.url.path == "/health":
