@@ -1,0 +1,32 @@
+# Mutation testing configuration (cosmic-ray).
+#
+# Only application code under src/ is mutated. tests/ and the schemathesis
+# contract test (schema_test.py) are never mutated; the unit tests in tests/
+# are the suite that has to kill the mutants.
+#
+# Usage (see README.md for details):
+#   uv run cosmic-ray init cosmic-ray.toml .cache/cosmic-ray.sqlite --force
+#   uv run cr-filter-git --config cosmic-ray.toml .cache/cosmic-ray.sqlite  # diff only
+#   uv run cosmic-ray exec cosmic-ray.toml .cache/cosmic-ray.sqlite
+#   uv run cr-report .cache/cosmic-ray.sqlite --surviving-only --show-diff
+#
+# cosmic-ray applies each mutation to the file on disk and restores it
+# afterwards, so do not edit src/ while a run is in progress.
+
+[cosmic-ray]
+module-path = "src"
+excluded-modules = []
+# Each mutant runs the unit tests in a fresh process; -x stops at the first
+# failing test so killed mutants finish quickly.
+test-command = "python -m pytest -x -q -p no:cacheprovider tests/"
+# Seconds per mutant. A clean test run takes about 2 seconds, so anything
+# slower than this is an infinite loop or a hang and is counted as killed.
+timeout = 30.0
+
+[cosmic-ray.distributor]
+name = "local"
+
+[cosmic-ray.filters.git-filter]
+# Base for diff-only runs: mutants outside lines changed relative to this ref
+# are marked as skipped by cr-filter-git.
+branch = "origin/master"
