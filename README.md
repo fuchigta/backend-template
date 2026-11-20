@@ -96,6 +96,7 @@ uv run ruff check . && uv run mypy src/ && uv run pytest && uv run lizard src/ &
 - **単体テスト**: pytestによる包括的なテストカバレッジ
 - **契約テスト**: schemathesisによるスキーマ駆動テスト
 - **統合テスト**: 完全なAPIワークフロー検証
+- **ミューテーションテスト**: cosmic-rayによるテスト検出力の測定（PRでは master との差分行のみ）
 
 ### 複雑度閾値
 - **循環的複雑度**: ≤ 8
@@ -166,6 +167,18 @@ uv run mypy src/                        # 型チェック
 uv run lizard src/                      # 複雑度解析
 uv run detect-secrets scan --baseline .secrets.baseline .  # シークレット検出
 uv run pip-audit                        # 脆弱性スキャン
+```
+
+### ミューテーションテスト
+設定は `cosmic-ray.toml`（変異対象は `src/` のみ）。セッションDBは git 管理外の `.cache/` に置きます。
+cosmic-ray は変異をディスク上のファイルに直接適用して元に戻すため、実行中は `src/` を編集しないでください。
+```bash
+mkdir -p .cache
+uv run cosmic-ray init cosmic-ray.toml .cache/cosmic-ray.sqlite --force  # ミュータント生成
+uv run cr-filter-git --config cosmic-ray.toml .cache/cosmic-ray.sqlite   # 差分のみ: origin/master からの変更行以外をスキップ（フル実行時は省略）
+uv run cosmic-ray exec cosmic-ray.toml .cache/cosmic-ray.sqlite          # 実行（フル実行は約4分）
+uv run cr-report .cache/cosmic-ray.sqlite --surviving-only --show-diff   # 生き残ったミュータントの表示
+uv run cr-rate --fail-over 0.001 .cache/cosmic-ray.sqlite                # 生き残りが1件でもあれば終了コード1
 ```
 
 ### Pre-commit
