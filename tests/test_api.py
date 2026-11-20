@@ -143,3 +143,77 @@ def test_health_check_method_not_allowed(client: TestClient) -> None:
     assert response.status_code == 405
     assert response.headers["Allow"] == "GET"
     assert "message" in response.json()
+
+
+def test_tasks_collection_method_not_allowed(client: TestClient) -> None:
+    response = client.delete("/tasks")
+    assert response.status_code == 405
+    assert response.headers["Allow"] == "GET, POST"
+
+
+def test_task_item_method_not_allowed(client: TestClient) -> None:
+    response = client.post("/tasks/1")
+    assert response.status_code == 405
+    assert response.headers["Allow"] == "GET, PUT, DELETE"
+
+
+def test_not_found_has_no_allow_header(client: TestClient) -> None:
+    response = client.get("/tasks/999")
+    assert response.status_code == 404
+    assert "Allow" not in response.headers
+
+
+def test_trailing_slash_is_not_redirected(client: TestClient) -> None:
+    response = client.get("/tasks/", follow_redirects=False)
+    assert response.status_code == 404
+
+
+def test_create_task_single_char_description(client: TestClient) -> None:
+    task_data = {"title": "Test task", "description": "a"}
+    response = client.post("/tasks", json=task_data)
+    assert response.status_code == 201
+    assert response.json()["description"] == "a"
+
+
+def test_create_task_timestamps_have_utc_suffix(client: TestClient) -> None:
+    task_data = {"title": "Test task", "description": "Test description"}
+    data = client.post("/tasks", json=task_data).json()
+    assert data["created_at"].endswith("Z")
+    assert data["updated_at"].endswith("Z")
+
+
+def test_update_task_keeps_fields_not_sent(client: TestClient) -> None:
+    task_data = {"title": "Original task", "description": "Original description"}
+    task_id = client.post("/tasks", json=task_data).json()["id"]
+
+    response = client.put(f"/tasks/{task_id}", json={"title": "Updated task"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == "Updated task"
+    assert data["description"] == "Original description"
+    assert data["completed"] is False
+
+
+def test_update_task_single_char_description(client: TestClient) -> None:
+    task_data = {"title": "Test task", "description": "Test description"}
+    task_id = client.post("/tasks", json=task_data).json()["id"]
+
+    response = client.put(f"/tasks/{task_id}", json={"description": "a"})
+    assert response.status_code == 200
+    assert response.json()["description"] == "a"
+
+
+def test_update_task_empty_description(client: TestClient) -> None:
+    task_data = {"title": "Test task", "description": "Test description"}
+    task_id = client.post("/tasks", json=task_data).json()["id"]
+
+    response = client.put(f"/tasks/{task_id}", json={"description": ""})
+    assert response.status_code == 400
+
+
+def test_update_task_null_title(client: TestClient) -> None:
+    task_data = {"title": "Test task", "description": "Test description"}
+    task_id = client.post("/tasks", json=task_data).json()["id"]
+
+    response = client.put(f"/tasks/{task_id}", json={"title": None})
+    assert response.status_code == 400
