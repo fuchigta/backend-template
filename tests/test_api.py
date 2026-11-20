@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from src.api.database import db
+from src.api.database import TaskDatabase, db
 from src.api.main import app
 
 
@@ -217,3 +217,30 @@ def test_update_task_null_title(client: TestClient) -> None:
 
     response = client.put(f"/tasks/{task_id}", json={"title": None})
     assert response.status_code == 400
+
+
+def test_task_ids_are_sequential_from_one(client: TestClient) -> None:
+    task_data = {"title": "Task", "description": "d"}
+    ids = [client.post("/tasks", json=task_data).json()["id"] for _ in range(3)]
+    assert ids == [1, 2, 3]
+
+
+def test_task_ids_start_at_one_for_new_database(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The client fixture resets _next_id by hand, so use a freshly constructed
+    # database to check the initial value set by TaskDatabase itself.
+    monkeypatch.setattr("src.api.main.db", TaskDatabase())
+
+    response = client.post("/tasks", json={"title": "First", "description": "d"})
+    assert response.json()["id"] == 1
+
+
+def test_deleted_task_id_is_not_reused(client: TestClient) -> None:
+    task_data = {"title": "Task", "description": "d"}
+    client.post("/tasks", json=task_data)
+    second_id = client.post("/tasks", json=task_data).json()["id"]
+    client.delete(f"/tasks/{second_id}")
+
+    response = client.post("/tasks", json=task_data)
+    assert response.json()["id"] == 3
