@@ -175,6 +175,7 @@ cosmic-ray は変異をディスク上のファイルに直接適用して元に
 ```bash
 mkdir -p .cache
 uv run cosmic-ray init cosmic-ray.toml .cache/cosmic-ray.sqlite --force  # ミュータント生成
+uv run cr-filter-pragma .cache/cosmic-ray.sqlite                          # `# pragma: no mutate` の行をスキップ（等価ミュータント）
 uv run cr-filter-git --config cosmic-ray.toml .cache/cosmic-ray.sqlite   # 差分のみ: origin/master からの変更行以外をスキップ（フル実行時は省略）
 uv run cosmic-ray exec cosmic-ray.toml .cache/cosmic-ray.sqlite          # 実行（フル実行は約4分）
 uv run cr-report .cache/cosmic-ray.sqlite --surviving-only --show-diff   # 生き残ったミュータントの表示

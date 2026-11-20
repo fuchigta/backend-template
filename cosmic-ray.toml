@@ -6,6 +6,7 @@
 #
 # Usage (see README.md for details):
 #   uv run cosmic-ray init cosmic-ray.toml .cache/cosmic-ray.sqlite --force
+#   uv run cr-filter-pragma .cache/cosmic-ray.sqlite  # skip `# pragma: no mutate` lines
 #   uv run cr-filter-git --config cosmic-ray.toml .cache/cosmic-ray.sqlite  # diff only
 #   uv run cosmic-ray exec cosmic-ray.toml .cache/cosmic-ray.sqlite
 #   uv run cr-report .cache/cosmic-ray.sqlite --surviving-only --show-diff

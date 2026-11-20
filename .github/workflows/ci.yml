@@ -83,6 +83,9 @@ jobs:
           mkdir -p "$(dirname "$SESSION")"
           uv run cosmic-ray init cosmic-ray.toml "$SESSION" --force
 
+      - name: Skip lines marked with pragma no mutate
+        run: uv run cr-filter-pragma "$SESSION"
+
       - name: Limit to lines changed from master
         if: github.event_name == 'pull_request'
         run: uv run cr-filter-git --config cosmic-ray.toml "$SESSION"
