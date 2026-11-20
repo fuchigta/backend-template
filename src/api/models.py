@@ -25,7 +25,7 @@ class TaskUpdate(BaseModel):
     completed: StrictBool | None = None
 
     @field_validator("title", "description", "completed")
-    @classmethod
+    @classmethod  # pragma: no mutate (pydantic adds classmethod itself)
     def reject_null(cls, value: object) -> object:
         """Reject explicit null values; omitted fields are fine."""
         if value is None:
@@ -34,10 +34,10 @@ class TaskUpdate(BaseModel):
 
 
 class Task(TaskBase):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)  # pragma: no mutate (never read)
 
     id: int
-    completed: bool = False
+    completed: bool = False  # pragma: no mutate (always passed explicitly)
     created_at: datetime
     updated_at: datetime
 

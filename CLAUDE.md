@@ -36,9 +36,20 @@ uv run lizard src/                      # Complexity analysis
 cccc src                                # Cognitive/cyclomatic complexity gate (cccc v1.8.6 binary, thresholds in cccc.toml)
 ```
 
+**Mutation Testing (cosmic-ray, config in cosmic-ray.toml):**
+```bash
+mkdir -p .cache                                                          # Session DB lives in .cache/ (git-ignored)
+uv run cosmic-ray init cosmic-ray.toml .cache/cosmic-ray.sqlite --force  # Generate mutants for src/
+uv run cr-filter-pragma .cache/cosmic-ray.sqlite                          # Skip lines marked `# pragma: no mutate` (equivalent mutants)
+uv run cr-filter-git --config cosmic-ray.toml .cache/cosmic-ray.sqlite   # Diff only: skip mutants outside lines changed from origin/master (omit for a full run)
+uv run cosmic-ray exec cosmic-ray.toml .cache/cosmic-ray.sqlite          # Run mutants (full run: about 4 minutes)
+uv run cr-report .cache/cosmic-ray.sqlite --surviving-only --show-diff   # Show surviving mutants
+uv run cr-rate --fail-over 0.001 .cache/cosmic-ray.sqlite                # Exit 1 if any mutant survived
+```
+
 **Quality Check All:**
 ```bash
-uv run ruff check . && uv run mypy src/ && uv run pytest && uv run lizard src/ && cccc src && uv run python schema_test.py && uv run detect-secrets scan --baseline .secrets.baseline . && uv run pip-audit
+uv run ruff check . && uv run mypy src/ && uv run pytest && uv run lizard src/ && cccc src && uv run python schema_test.py && uv run detect-secrets scan --baseline .secrets.baseline . && uv run pip-audit && mkdir -p .cache && uv run cosmic-ray init cosmic-ray.toml .cache/cosmic-ray.sqlite --force && uv run cr-filter-pragma .cache/cosmic-ray.sqlite && uv run cr-filter-git --config cosmic-ray.toml .cache/cosmic-ray.sqlite && uv run cosmic-ray exec cosmic-ray.toml .cache/cosmic-ray.sqlite && uv run cr-rate --fail-over 0.001 .cache/cosmic-ray.sqlite
 ```
 
 **Pre-commit Hooks:**
