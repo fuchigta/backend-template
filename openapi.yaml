@@ -193,6 +193,11 @@ components:
         id:
           type: integer
           format: int64
+          description: >-
+            Task identifier assigned by the server when the task is created.
+            IDs start at 1 and increase by 1 in creation order (1, 2, 3, ...).
+            IDs of deleted tasks are not reused. Tasks are kept in memory, so
+            numbering starts again from 1 when the server restarts.
           example: 1
         title:
           type: string
