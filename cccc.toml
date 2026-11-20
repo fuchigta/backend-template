@@ -1,2 +1,8 @@
-max-cognitive = 15
-max-cyclomatic = 10
+# Complexity gate for `cccc src` (local and CI via moznion/cccc-action, cccc v1.8.6).
+# Thresholds = measured max + 2. The gate fails only when a function EXCEEDS a value.
+#
+# 2026-11-10: introduced with default thresholds 15 / 10 (measured max: cognitive 6 / cyclomatic 6)
+# 2026-11-20: re-measured max: cognitive 6 / cyclomatic 6 (custom_http_exception_handler)
+#             -> tightened to cognitive 8 / cyclomatic 8
+max-cognitive = 8
+max-cyclomatic = 8
