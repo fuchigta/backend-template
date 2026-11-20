@@ -51,3 +51,65 @@ jobs:
 
       - name: Pip audit
         run: uv run pip-audit
+
+  # Mutation testing (cosmic-ray, configured in cosmic-ray.toml).
+  # Pull requests: only mutants on lines changed relative to origin/master are
+  # run, and any surviving mutant fails the job.
+  # Pushes to master: every mutant in src/ is run (about 4-5 minutes) and the
+  # result is reported in the job summary and as an HTML artifact.
+  mutation:
+    runs-on: ubuntu-latest
+    env:
+      SESSION: .cache/cosmic-ray.sqlite
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # cr-filter-git diffs against origin/master, so it must be fetched.
+          fetch-depth: 0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked --dev
+
+      - name: Mutation baseline (tests pass without mutations)
+        run: uv run cosmic-ray baseline cosmic-ray.toml
+
+      - name: Generate mutants
+        run: |
+          mkdir -p "$(dirname "$SESSION")"
+          uv run cosmic-ray init cosmic-ray.toml "$SESSION" --force
+
+      - name: Limit to lines changed from master
+        if: github.event_name == 'pull_request'
+        run: uv run cr-filter-git --config cosmic-ray.toml "$SESSION"
+
+      - name: Run mutants
+        run: uv run cosmic-ray exec cosmic-ray.toml "$SESSION"
+
+      - name: Report surviving mutants
+        if: always()
+        run: |
+          {
+            echo '## Mutation testing'
+            echo '```'
+            uv run cr-report "$SESSION" --surviving-only --show-diff
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          uv run cr-html --skip-success "$SESSION" > mutation-report.html
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: mutation-report
+          path: mutation-report.html
+
+      - name: Fail on surviving mutants
+        if: github.event_name == 'pull_request'
+        # cr-rate treats --fail-over 0 as "no limit", so use the smallest
+        # positive rate: any surviving mutant in the diff fails the job.
+        run: uv run cr-rate --fail-over 0.001 "$SESSION"
