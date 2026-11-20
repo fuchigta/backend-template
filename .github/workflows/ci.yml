@@ -56,11 +56,19 @@ jobs:
   # Pull requests: only mutants on lines changed relative to origin/master are
   # run, and any surviving mutant fails the job.
   # Pushes to master: every mutant in src/ is run (about 4-5 minutes) and the
-  # result is reported in the job summary and as an HTML artifact.
+  # result is reported in the job summary and as an HTML artifact. The job
+  # fails if more mutants survive than MAX_SURVIVING_MUTANTS (below).
   mutation:
     runs-on: ubuntu-latest
     env:
       SESSION: .cache/cosmic-ray.sqlite
+      # Ratchet for the full run on master: the number of known equivalent
+      # mutants that survive on purpose. All 9 are in src/api/main.py; see
+      # "Known survivors, not excluded (9)" in PR #7 for each mutant and why
+      # it is equivalent. When a code or test change removes one of them,
+      # lower this number in the same change so the gate tightens. Never
+      # raise it to let a new survivor through; kill the mutant instead.
+      MAX_SURVIVING_MUTANTS: 9
     steps:
       - uses: actions/checkout@v7
         with:
@@ -116,3 +124,14 @@ jobs:
         # cr-rate treats --fail-over 0 as "no limit", so use the smallest
         # positive rate: any surviving mutant in the diff fails the job.
         run: uv run cr-rate --fail-over 0.001 "$SESSION"
+
+      - name: Fail on more survivors than known equivalent mutants
+        if: github.event_name == 'push'
+        run: |
+          survived=$(uv run cosmic-ray dump "$SESSION" \
+            | jq -s '[.[] | select(.[1].test_outcome == "survived")] | length')
+          echo "Surviving mutants: $survived (limit: $MAX_SURVIVING_MUTANTS)"
+          if [ "$survived" -gt "$MAX_SURVIVING_MUTANTS" ]; then
+            echo "::error::$survived mutants survived, more than the $MAX_SURVIVING_MUTANTS known equivalent mutants. Kill the new survivors (see the job summary)."
+            exit 1
+          fi

@@ -96,7 +96,7 @@ uv run ruff check . && uv run mypy src/ && uv run pytest && uv run lizard src/ &
 - **単体テスト**: pytestによる包括的なテストカバレッジ
 - **契約テスト**: schemathesisによるスキーマ駆動テスト
 - **統合テスト**: 完全なAPIワークフロー検証
-- **ミューテーションテスト**: cosmic-rayによるテスト検出力の測定（PRでは master との差分行のみ）
+- **ミューテーションテスト**: cosmic-rayによるテスト検出力の測定（PRでは master との差分行のみで、生き残りがあれば失敗。master への push ではフル実行で、生き残りが既知の等価ミュータント数（`.github/workflows/ci.yml` の `MAX_SURVIVING_MUTANTS`）を超えたら失敗）
 
 ### 複雑度閾値
 - **循環的複雑度**: ≤ 8
