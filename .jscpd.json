@@ -1,0 +1,9 @@
+{
+  "threshold": 1.7,
+  "reporters": ["console"],
+  "ignore": [
+    "tests/**",
+    "schema_test.py",
+    ".claude/**"
+  ]
+}
