@@ -1,0 +1,7 @@
+{
+  "ignore": [
+    "tests/**",
+    "schema_test.py",
+    ".claude/**"
+  ]
+}
