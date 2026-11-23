@@ -1,0 +1,49 @@
+name: jscpd
+
+# Check that copy-paste duplication does not grow. jscpd is not a Python tool,
+# so it is pinned through the npx version instead of the uv dependencies. The
+# settings live in .jscpd.json; JSON cannot hold comments, so the rationale for
+# them is kept here.
+#
+# - Version: jscpd 5.4.3 (Rust engine). Exact clones only.
+# - Detection: defaults (min-tokens 50, min-lines 5, mode mild). Files in
+#   .gitignore are skipped by default. The root main.py (41 tokens) is below
+#   min-tokens and is not analyzed. jscpd also scans the fenced code blocks in
+#   CLAUDE.md and README.md, reported as bash/text sources.
+# - Measured: 11 files, 1 clone, line duplication 1.20% (18/1503), token
+#   duplication 0.67% (57/8449). The clone is in openapi.yaml: the 400/404/405
+#   error responses repeated between GET and DELETE /tasks/{taskId}. The
+#   Python sources in src/ have no clones.
+# - threshold: compared with the line duplication rate and fails only when it
+#   is exceeded. Set to 1.7, the measured value plus about 0.5 points of
+#   headroom, as a ratchet: when duplication goes down, lower the threshold.
+# - ignore:
+#   - tests/**: over-DRY tests are a hazard, so tests are written plainly and
+#     kept out of this gate, which is about production code. With tests and
+#     schema_test.py included the result is 13 files, 1 clone, lines 0.97%
+#     (18/1857), tokens 0.55% (57/10429); they add no clones and only dilute
+#     the rate.
+#   - schema_test.py: the schemathesis contract test script; treated like
+#     tests/.
+#   - .claude/**: prompts and agent settings, not product code (not present
+#     yet).
+#   - When measuring locally, do not pass --ignore; use .jscpd.json. The CLI
+#     --ignore replaces the ignore list in .jscpd.json instead of adding to it,
+#     so the numbers would differ.
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  jscpd:
+    name: jscpd
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: jscpd
+        run: npx --yes jscpd@5.4.3 --no-tips --no-colors .
