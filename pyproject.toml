@@ -22,6 +22,7 @@ dev = [
     "pip-audit>=2.6.0",
     "schemathesis>=3.33.0",
     "cosmic-ray>=8.9.0",
+    "hypothesis>=6.170.17",
 ]
 
 [tool.ruff]
