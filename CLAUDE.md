@@ -24,6 +24,7 @@ uv run uvicorn src.api.main:app --reload # Alternative with hot reload
 uv run pytest                           # Run all tests
 uv run pytest tests/test_api.py -v      # Run specific test file with verbose output
 uv run pytest -k "test_create_task"     # Run specific test by name
+uv run pytest tests/test_properties.py  # Hypothesis property-based tests for TaskDatabase/models (64 examples each)
 uv run python contract_test.py          # Run API contract tests against OpenAPI spec
 ```
 
