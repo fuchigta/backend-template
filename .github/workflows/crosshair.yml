@@ -1,0 +1,63 @@
+name: CrossHair
+
+# Check the PEP 316 docstring contracts in src/api/ with CrossHair
+# (crosshair-tool, symbolic execution with the Z3 SMT solver).
+#
+# - crosshair check exits 1 when it finds a counterexample. Exit 0 means no
+#   counterexample was found within the budget, not that the contract is
+#   proved: most conditions end as "Not confirmed".
+# - crosshair_plugin.py is required. Without it CrossHair cannot build the
+#   pydantic models from symbolic values and every path ends UNKNOWN, which
+#   still exits 0. --extra_plugin takes several files, so it goes last.
+# - Targets are listed per method rather than per file: the class invariants
+#   on TaskDatabase would otherwise also pull in create_task, which builds a
+#   Task through pydantic validation and cannot run on symbolic values.
+# - Budgets were chosen so that every deliberate break tried when this
+#   workflow was added is caught (local times in brackets):
+#   - serialize_datetime: --per_condition_timeout 10 (about 35 s). The default
+#     budget misses an implementation that skips astimezone(); 10 CPU seconds
+#     per condition catches it in about 25 s. An iteration budget of 20 takes
+#     about 7.5 minutes for this one method.
+#   - TaskDatabase: --max_uninteresting_iterations 100 (about 3 minutes).
+#     20 iterations misses a get_all_tasks that returns tasks in reverse.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  crosshair:
+    name: crosshair
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked --dev
+
+      - name: CrossHair (models)
+        run: >-
+          uv run crosshair check
+          src.api.models.Task.serialize_datetime
+          --per_condition_timeout 10
+          --extra_plugin crosshair_plugin.py
+
+      - name: CrossHair (database)
+        run: >-
+          uv run crosshair check
+          src.api.database.TaskDatabase.get_task
+          src.api.database.TaskDatabase.delete_task
+          src.api.database.TaskDatabase.update_task
+          src.api.database.TaskDatabase.get_all_tasks
+          --max_uninteresting_iterations 100
+          --extra_plugin crosshair_plugin.py
