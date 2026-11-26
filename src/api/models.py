@@ -46,6 +46,11 @@ class Task(TaskBase):
         """Serialize as an ISO 8601 UTC timestamp with a "Z" suffix.
 
         Aware values are converted to UTC; naive values are taken to be UTC.
+
+        post: __return__.endswith("Z")
+        post: datetime.fromisoformat(__return__).tzinfo is UTC
+        post: datetime.fromisoformat(_) == dt.replace(tzinfo=dt.tzinfo or UTC)
+        raises: OverflowError
         """
         if dt.tzinfo is not None:
             dt = dt.astimezone(UTC)
