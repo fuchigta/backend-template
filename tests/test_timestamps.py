@@ -82,9 +82,7 @@ def test_api_created_timestamps_parse_back_to_the_current_utc_instant(
 def test_api_updated_at_parses_back_to_the_current_utc_instant(
     client: TestClient,
 ) -> None:
-    task_id = client.post("/tasks", json={"title": "t", "description": "d"}).json()[
-        "id"
-    ]
+    task_id = client.post("/tasks", json={"title": "t", "description": "d"}).json()["id"]
 
     before = datetime.now(UTC)
     data = client.put(f"/tasks/{task_id}", json={"title": "new"}).json()

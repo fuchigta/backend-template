@@ -23,15 +23,19 @@ dev = [
     "schemathesis>=3.33.0",
     "cosmic-ray>=8.9.0",
     "hypothesis>=6.170.17",
+    "crosshair-tool>=0.0.114",
 ]
 
 [tool.ruff]
 target-version = "py312"
-line-length = 88
+line-length = 120
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "T20", "PYI"]
-ignore = []
+# E501 (line too long) is off: ruff format still wraps code at line-length,
+# but long lines it cannot wrap, such as the single-line PEP 316 contracts that
+# CrossHair reads from docstrings, are allowed.
+ignore = ["E501"]
 
 [tool.mypy]
 python_version = "3.12"

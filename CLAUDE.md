@@ -36,6 +36,7 @@ uv run mypy src/                        # Type checking
 uv run lizard src/                      # Complexity analysis
 cccc src                                # Cognitive/cyclomatic complexity gate (cccc v1.8.6 binary, thresholds in cccc.toml)
 npx --yes jscpd@5.4.3 --no-tips --no-colors .  # Duplicate-code gate (settings in .jscpd.json, rationale in .github/workflows/jscpd.yml)
+uv run crosshair check src.api.database.TaskDatabase.get_task --extra_plugin crosshair_plugin.py  # CrossHair contract check (targets and budgets in .github/workflows/crosshair.yml)
 ```
 
 **Mutation Testing (cosmic-ray, config in cosmic-ray.toml):**

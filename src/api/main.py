@@ -15,9 +15,7 @@ app = FastAPI(
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(
-    request: Request, exc: RequestValidationError
-) -> JSONResponse:
+async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
     return JSONResponse(
         status_code=400,
         content={"message": "Invalid input"},
@@ -25,17 +23,13 @@ async def validation_exception_handler(
 
 
 @app.exception_handler(StarletteHTTPException)
-async def custom_http_exception_handler(
-    request: Request, exc: StarletteHTTPException
-) -> JSONResponse:
+async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
     headers = {}
     if exc.status_code == 405:
         # Add Allow header for Method Not Allowed responses
         if request.url.path == "/tasks":
             headers["Allow"] = "GET, POST"
-        elif (
-            request.url.path.startswith("/tasks/") and request.url.path.count("/") == 2
-        ):
+        elif request.url.path.startswith("/tasks/") and request.url.path.count("/") == 2:
             headers["Allow"] = "GET, PUT, DELETE"
         elif request.url.path == "/health":
             headers["Allow"] = "GET"

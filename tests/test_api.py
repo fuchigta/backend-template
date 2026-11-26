@@ -225,9 +225,7 @@ def test_task_ids_are_sequential_from_one(client: TestClient) -> None:
     assert ids == [1, 2, 3]
 
 
-def test_task_ids_start_at_one_for_new_database(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_task_ids_start_at_one_for_new_database(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
     # The client fixture resets _next_id by hand, so use a freshly constructed
     # database to check the initial value set by TaskDatabase itself.
     monkeypatch.setattr("src.api.main.db", TaskDatabase())
