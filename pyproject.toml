@@ -23,6 +23,7 @@ dev = [
     "schemathesis>=3.33.0",
     "cosmic-ray>=8.9.0",
     "hypothesis>=6.170.17",
+    "crosshair-tool>=0.0.114",
 ]
 
 [tool.ruff]
