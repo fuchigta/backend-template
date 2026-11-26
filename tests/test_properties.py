@@ -167,9 +167,7 @@ def test_serialized_timestamps_are_utc_iso8601_with_z_suffix(
 
 @settings(max_examples=MAX_EXAMPLES)
 @given(title=titles, description=descriptions)
-def test_task_create_accepts_any_title_and_non_empty_description(
-    title: str, description: str
-) -> None:
+def test_task_create_accepts_any_title_and_non_empty_description(title: str, description: str) -> None:
     task = TaskCreate(title=title, description=description)
     assert (task.title, task.description) == (title, description)
 
@@ -189,9 +187,7 @@ def test_task_update_dumps_only_sent_fields(fields: dict[str, Any]) -> None:
 
 @settings(max_examples=MAX_EXAMPLES)
 @given(fields=update_fields, null_field=st.sampled_from(UPDATABLE_FIELDS))
-def test_task_update_rejects_explicit_null(
-    fields: dict[str, Any], null_field: str
-) -> None:
+def test_task_update_rejects_explicit_null(fields: dict[str, Any], null_field: str) -> None:
     with pytest.raises(ValidationError):
         TaskUpdate(**{**fields, null_field: None})
 
