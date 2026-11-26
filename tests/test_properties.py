@@ -6,7 +6,7 @@ directly. Every example builds a fresh TaskDatabase instead of the global
 ``db`` singleton so that no state leaks between examples.
 """
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta, timezone
 from typing import Any
 
 import pytest
@@ -116,17 +116,34 @@ TestTaskDatabaseStateful = TaskDatabaseMachine.TestCase
 TestTaskDatabaseStateful.settings = settings(max_examples=MAX_EXAMPLES)
 
 
+# Naive datetimes (read as UTC), UTC itself, and arbitrary fixed offsets.
+# The range stops a day short of datetime.min/max so that converting an
+# offset value to UTC cannot overflow.
+timestamps = st.datetimes(
+    min_value=datetime(1, 1, 2),
+    max_value=datetime(9999, 12, 30),
+    timezones=st.none()
+    | st.just(UTC)
+    | st.builds(
+        timezone,
+        st.timedeltas(
+            min_value=timedelta(hours=-23, minutes=-59),
+            max_value=timedelta(hours=23, minutes=59),
+        ),
+    ),
+)
+
+
 @settings(max_examples=MAX_EXAMPLES)
 @given(
     title=titles,
     description=descriptions,
-    created_at=st.datetimes(),
-    updated_at=st.datetimes(),
+    created_at=timestamps,
+    updated_at=timestamps,
 )
-def test_serialized_timestamps_are_iso8601_with_z_suffix(
+def test_serialized_timestamps_are_utc_iso8601_with_z_suffix(
     title: str, description: str, created_at: datetime, updated_at: datetime
 ) -> None:
-    # TaskDatabase stores naive datetimes, so naive ones are generated here.
     task = Task(
         id=1,
         title=title,
@@ -139,7 +156,13 @@ def test_serialized_timestamps_are_iso8601_with_z_suffix(
     for key, original in (("created_at", created_at), ("updated_at", updated_at)):
         serialized = dumped[key]
         assert serialized.endswith("Z")
-        assert datetime.fromisoformat(serialized) == original.replace(tzinfo=UTC)
+        assert "+" not in serialized
+        parsed = datetime.fromisoformat(serialized)
+        assert parsed.utcoffset() == timedelta(0)
+        if original.tzinfo is None:
+            assert parsed == original.replace(tzinfo=UTC)
+        else:
+            assert parsed == original
 
 
 @settings(max_examples=MAX_EXAMPLES)

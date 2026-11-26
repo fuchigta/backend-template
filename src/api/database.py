@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from .models import Task, TaskCreate, TaskUpdate
 
@@ -9,7 +9,7 @@ class TaskDatabase:
         self._next_id = 1
 
     def create_task(self, task_data: TaskCreate) -> Task:
-        now = datetime.now()
+        now = datetime.now(UTC)
         task = Task(
             id=self._next_id,
             title=task_data.title,
@@ -37,7 +37,7 @@ class TaskDatabase:
         for field, value in update_data.items():
             setattr(task, field, value)
 
-        task.updated_at = datetime.now()
+        task.updated_at = datetime.now(UTC)
         return task
 
     def delete_task(self, task_id: int) -> bool:
