@@ -1,0 +1,18 @@
+name: Set up uv project
+description: >-
+  Install uv (with its cache) and sync the locked project dependencies,
+  including the dev group. Shared by the ci, mutation and crosshair jobs.
+  Run actions/checkout first: a local action can only be loaded from a
+  checked-out repository.
+
+runs:
+  using: composite
+  steps:
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v10.3.3
+      with:
+        enable-cache: true
+
+    - name: Install dependencies
+      shell: bash
+      run: uv sync --locked --dev

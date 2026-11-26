@@ -37,13 +37,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v10.3.3
-        with:
-          enable-cache: true
-
-      - name: Install dependencies
-        run: uv sync --locked --dev
+      - name: Set up uv and install dependencies
+        uses: ./.github/actions/setup-uv-project
 
       - name: CrossHair (models)
         run: >-
