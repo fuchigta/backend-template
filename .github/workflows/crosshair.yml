@@ -18,8 +18,10 @@ name: CrossHair
 #     budget misses an implementation that skips astimezone(); 10 CPU seconds
 #     per condition catches it in about 25 s. An iteration budget of 20 takes
 #     about 7.5 minutes for this one method.
-#   - TaskDatabase: --max_uninteresting_iterations 100 (about 3 minutes).
-#     20 iterations misses a get_all_tasks that returns tasks in reverse.
+#   - TaskDatabase: --max_uninteresting_iterations 100 (about 3 minutes; about
+#     2 minutes on GitHub-hosted runners). update_task alone varies between
+#     about 1 and 3 minutes from run to run. 20 iterations misses a
+#     get_all_tasks that returns tasks in reverse.
 
 on:
   push:
