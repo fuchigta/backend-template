@@ -47,6 +47,7 @@ class TaskDatabase:
         post[self]:
             (_ is None) == (task_id not in __old__.self._tasks)
             _ is None or _ == self.get_task(task_id)
+            _ is None or all(getattr(_, f) == getattr(task_update, f) for f in task_update.model_fields_set)
             _ is None or _.created_at == __old__.self._tasks[task_id].created_at
             _ is None or _.updated_at.tzinfo is UTC
         """
