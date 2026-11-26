@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from pydantic import (
     BaseModel,
@@ -43,8 +43,13 @@ class Task(TaskBase):
 
     @field_serializer("created_at", "updated_at")
     def serialize_datetime(self, dt: datetime) -> str:
-        """Serialize datetime to ISO 8601 format with timezone."""
-        return dt.isoformat() + "Z"
+        """Serialize as an ISO 8601 UTC timestamp with a "Z" suffix.
+
+        Aware values are converted to UTC; naive values are taken to be UTC.
+        """
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(UTC)
+        return dt.replace(tzinfo=None).isoformat() + "Z"
 
 
 class ErrorResponse(BaseModel):
